@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class JogadorService {
 
-    List<Jogador> jogadores = new ArrayList<>();
+    private List<Jogador> jogadores = new ArrayList<>();
 
 
     public JogadorService() {
@@ -25,7 +26,7 @@ public class JogadorService {
         }
     }
 
-    public void carregarDados() throws FileNotFoundException {
+    private void carregarDados() throws FileNotFoundException {
 
         FileReader leitor = abrirArquivo();
 
@@ -37,15 +38,17 @@ public class JogadorService {
 
     private FileReader abrirArquivo() throws FileNotFoundException {
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        FileReader fileReader = new FileReader(classLoader.getResource("data.csv").getFile());
+        URL url = getClass().getClassLoader().getResource("data.csv");
 
-        return fileReader;
+        if (url == null)
+            return null;
+
+        return new FileReader(url.getFile());
     }
 
     public int q1() {
         return (int) jogadores
-                .parallelStream()
+                .stream()
                 .map(Jogador::getNationality)
                 .distinct()
                 .count();
@@ -53,7 +56,7 @@ public class JogadorService {
 
     public int q2() {
         return (int) jogadores
-                .parallelStream()
+                .stream()
                 .filter(j -> !(j.getClub().isEmpty()))
                 .map(Jogador::getClub)
                 .distinct()
@@ -62,7 +65,7 @@ public class JogadorService {
 
     public List<String> q3() {
         return jogadores
-                .parallelStream()
+                .stream()
                 .limit(20)
                 .map(Jogador::getFullName)
                 .collect(Collectors.toList());
@@ -70,7 +73,7 @@ public class JogadorService {
 
     public List<String> q4() {
         return jogadores
-                .parallelStream()
+                .stream()
                 .filter(j -> j.getEurReleaseClause() != null)
                 .sorted(Comparator.comparingDouble(Jogador::getEurReleaseClause).reversed())
                 .limit(10)
@@ -83,7 +86,7 @@ public class JogadorService {
         Comparator<Jogador> comparator = Comparator.comparing(Jogador::getBirthDate)
                 .thenComparingDouble(Jogador::getEurWage);
 
-        return jogadores.parallelStream()
+        return jogadores.stream()
                 .sorted(comparator)
                 .limit(10)
                 .map(Jogador::getFullName)
@@ -96,7 +99,7 @@ public class JogadorService {
         // pois o Collectors.counting() retorna Long
         Collector<Object, ?, Integer> contador = Collectors.reducing(0, e -> 1, Integer::sum);
 
-        return jogadores.parallelStream()
+        return jogadores.stream()
                 .sorted(Comparator.comparingInt(Jogador::getAge))
                 .collect(Collectors.groupingBy(Jogador::getAge, contador));
     }
