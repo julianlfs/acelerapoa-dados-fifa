@@ -92,7 +92,8 @@ public class JogadorService {
 
     public Map<Integer, Integer> q6() {
 
-        //collection pra fazer count retornando Integer (requisito do desafio) pois o counting retorna Long
+        //collection pra fazer count retornando Integer (requisito do desafio)
+        // pois o Collectors.counting() retorna Long
         Collector<Object, ?, Integer> contador = Collectors.reducing(0, e -> 1, Integer::sum);
 
         return jogadores.parallelStream()
